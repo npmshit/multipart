@@ -1,4 +1,4 @@
-var Dicer = require("..");
+var Dicer = require("../modules/dicer");
 var assert = require("assert"),
   fs = require("fs"),
   path = require("path"),
@@ -14,8 +14,8 @@ var tests = [
     source: "many",
     opts: { boundary: "----WebKitFormBoundaryWLHCs9qmcJJoyjKR" },
     chsize: 16,
-    nparts: 7,
-    what: "Extra trailer data pushed after finished",
+    nparts: 0,
+    what: "No preamble or part listeners",
   },
 ];
 
@@ -26,7 +26,7 @@ function next() {
     fd,
     n = 0,
     buffer = new Buffer(v.chsize),
-    state = { parts: [] };
+    state = { done: false, parts: [], preamble: undefined };
 
   fd = fs.openSync(fixtureBase + "/original", "r");
 
@@ -35,8 +35,38 @@ function next() {
     partErrors = 0,
     finishes = 0;
 
-  dicer
-    .on("part", function(p) {
+  if (v.events && v.events.indexOf("preamble") > -1) {
+    dicer.on("preamble", function(p) {
+      var preamble = {
+        body: undefined,
+        bodylen: 0,
+        error: undefined,
+        header: undefined,
+      };
+
+      p.on("header", function(h) {
+        preamble.header = h;
+      })
+        .on("data", function(data) {
+          // make a copy because we are using readSync which re-uses a buffer ...
+          var copy = new Buffer(data.length);
+          data.copy(copy);
+          data = copy;
+          if (!preamble.body) preamble.body = [data];
+          else preamble.body.push(data);
+          preamble.bodylen += data.length;
+        })
+        .on("error", function(err) {
+          preamble.error = err;
+        })
+        .on("end", function() {
+          if (preamble.body) preamble.body = Buffer.concat(preamble.body, preamble.bodylen);
+          if (preamble.body || preamble.header) state.preamble = preamble;
+        });
+    });
+  }
+  if (v.events && v.events.indexOf("part") > -1) {
+    dicer.on("part", function(p) {
       var part = {
         body: undefined,
         bodylen: 0,
@@ -64,7 +94,9 @@ function next() {
           if (part.body) part.body = Buffer.concat(part.body, part.bodylen);
           state.parts.push(part);
         });
-    })
+    });
+  }
+  dicer
     .on("error", function(err) {
       error = err;
     })
@@ -73,6 +105,49 @@ function next() {
 
       if (v.dicerError) assert(error !== undefined, makeMsg(v.what, "Expected error"));
       else assert(error === undefined, makeMsg(v.what, "Unexpected error"));
+
+      if (v.events && v.events.indexOf("preamble") > -1) {
+        var preamble;
+        if (fs.existsSync(fixtureBase + "/preamble")) {
+          var prebody = fs.readFileSync(fixtureBase + "/preamble");
+          if (prebody.length) {
+            preamble = {
+              body: prebody,
+              bodylen: prebody.length,
+              error: undefined,
+              header: undefined,
+            };
+          }
+        }
+        if (fs.existsSync(fixtureBase + "/preamble.header")) {
+          var prehead = JSON.parse(fs.readFileSync(fixtureBase + "/preamble.header", "binary"));
+          if (!preamble) {
+            preamble = {
+              body: undefined,
+              bodylen: 0,
+              error: undefined,
+              header: prehead,
+            };
+          } else preamble.header = prehead;
+        }
+        if (fs.existsSync(fixtureBase + "/preamble.error")) {
+          var err = new Error(fs.readFileSync(fixtureBase + "/preamble.error", "binary"));
+          if (!preamble) {
+            preamble = {
+              body: undefined,
+              bodylen: 0,
+              error: err,
+              header: undefined,
+            };
+          } else preamble.error = err;
+        }
+
+        assert.deepEqual(
+          state.preamble,
+          preamble,
+          makeMsg(v.what, "Preamble mismatch:\nActual:" + inspect(state.preamble) + "\nExpected: " + inspect(preamble)),
+        );
+      }
 
       if (v.events && v.events.indexOf("part") > -1) {
         assert.equal(
@@ -120,10 +195,7 @@ function next() {
   while (true) {
     n = fs.readSync(fd, buffer, 0, buffer.length, null);
     if (n === 0) {
-      setTimeout(function() {
-        dicer.write("\r\n\r\n\r\n");
-        dicer.end();
-      }, 50);
+      dicer.end();
       break;
     }
     dicer.write(n === buffer.length ? buffer : buffer.slice(0, n));

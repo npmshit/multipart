@@ -1,4 +1,4 @@
-var Dicer = require("..");
+var Dicer = require("../modules/dicer");
 var assert = require("assert"),
   fs = require("fs"),
   path = require("path"),
