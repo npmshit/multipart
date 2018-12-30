@@ -3,7 +3,11 @@
   "version": "1.0.0",
   "author": "Zongmin Lei <leizongmin@gmail.com>",
   "description": "A streaming parser for HTML form data for node.js",
-  "main": "./lib/main",
+  "main": "lib/main.js",
+  "typings": "lib/index.d.ts",
+  "files": [
+    "lib"
+  ],
   "scripts": {
     "test": "node test/test.js"
   },
@@ -23,5 +27,8 @@
   "repository": {
     "type": "git",
     "url": "http://github.com/mscdex/busboy.git"
+  },
+  "peerDependencies": {
+    "@types/node": "^10.12.18"
   }
 }

@@ -1,4 +1,4 @@
-var Busboy = require("..");
+var Busboy = require("..").Busboy;
 
 var path = require("path");
 var inspect = require("util").inspect;

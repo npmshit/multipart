@@ -1,7 +1,7 @@
 var assert = require("assert"),
   path = require("path");
 
-var HeaderParser = require("../modules/dicer/HeaderParser");
+var HeaderParser = require("../lib/modules/dicer/HeaderParser");
 
 var DCRLF = "\r\n\r\n",
   MAXED_BUFFER = new Buffer(128 * 1024);
