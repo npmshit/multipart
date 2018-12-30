@@ -4,11 +4,11 @@
 // Definitions: https://github.com/DefinitelyTyped/DefinitelyTyped
 /// <reference types="node" />
 
-export interface Options {
+export interface IOptions {
   headers: any;
 }
 
-export interface BusboyConfig {
+export interface IBusboyConfig {
   headers?: any;
   highWaterMark?: number;
   fileHwm?: number;
@@ -26,6 +26,7 @@ export interface BusboyConfig {
 }
 
 export class Busboy extends NodeJS.WritableStream {
+  constructor(options: IBusboyConfig);
   on(
     event: "field",
     listener: (
