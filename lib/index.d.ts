@@ -2,7 +2,7 @@
 // Project: https://www.npmjs.com/package/busboy
 // Definitions by: Jacob Baskin <https://github.com/jacobbaskin>
 // Definitions: https://github.com/DefinitelyTyped/DefinitelyTyped
-/// <reference types="node" />
+import { Writable } from "stream";
 
 export interface IOptions {
   headers: any;
@@ -25,7 +25,7 @@ export interface IBusboyConfig {
   };
 }
 
-export class Busboy extends NodeJS.WritableStream {
+export class Busboy extends Writable {
   constructor(options: IBusboyConfig);
   on(
     event: "field",
