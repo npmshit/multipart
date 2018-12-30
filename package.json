@@ -1,7 +1,7 @@
 {
-  "name": "busboy",
-  "version": "0.2.14",
-  "author": "Brian White <mscdex@mscdex.net>",
+  "name": "@modernjs/multipart",
+  "version": "1.0.0",
+  "author": "Zongmin Lei <leizongmin@gmail.com>",
   "description": "A streaming parser for HTML form data for node.js",
   "main": "./lib/main",
   "scripts": {
@@ -16,17 +16,12 @@
     "multipart",
     "form-data"
   ],
-  "licenses": [
-    {
-      "type": "MIT",
-      "url": "http://github.com/mscdex/busboy/raw/master/LICENSE"
-    }
-  ],
+  "licenses": [{
+    "type": "MIT",
+    "url": "http://github.com/mscdex/busboy/raw/master/LICENSE"
+  }],
   "repository": {
     "type": "git",
     "url": "http://github.com/mscdex/busboy.git"
-  },
-  "dependencies": {
-    "streamsearch": "^0.1.2"
   }
 }
