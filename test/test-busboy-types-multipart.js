@@ -4,11 +4,12 @@ var path = require("path");
 var inspect = require("util").inspect;
 var assert = require("assert");
 
-var EMPTY_FN = function () {};
+var EMPTY_FN = function() {};
 
 var t = 0;
 var group = path.basename(__filename, ".js") + "/";
-var tests = [{
+var tests = [
+  {
     source: [
       [
         "-----------------------------paZqsnEHRufoShdX6fh0lUhXBP4k",
@@ -71,7 +72,7 @@ var tests = [{
     source: [""],
     boundary: "----WebKitFormBoundaryTB2MiQ36fnSJlrhY",
     expected: [],
-    what: "No fields and no files"
+    what: "No fields and no files",
   },
   {
     source: [
@@ -118,9 +119,7 @@ var tests = [{
     limits: {
       files: 0,
     },
-    expected: [
-      ["field", "file_name_0", "super alpha file", false, false, "7bit", "text/plain"]
-    ],
+    expected: [["field", "file_name_0", "super alpha file", false, false, "7bit", "text/plain"]],
     what: "Fields and files (limits: 0 files)",
   },
   {
@@ -230,9 +229,7 @@ var tests = [{
       ].join("\r\n"),
     ],
     boundary: "----WebKitFormBoundaryTB2MiQ36fnSJlrhY",
-    expected: [
-      ["field", "cont", "some random content", false, false, "7bit", "text/plain"]
-    ],
+    expected: [["field", "cont", "some random content", false, false, "7bit", "text/plain"]],
     what: "Empty content-type and empty content-disposition",
   },
   {
@@ -263,9 +260,7 @@ var tests = [{
       ].join("\r\n"),
     ],
     boundary: "----WebKitFormBoundaryTB2MiQ36fnSJlrhY",
-    expected: [
-      ["field", "cont", "{}", false, false, "7bit", "application/json"]
-    ],
+    expected: [["field", "cont", "{}", false, false, "7bit", "application/json"]],
     what: "content-type for fields",
   },
   {
@@ -292,30 +287,30 @@ function next() {
     results = [];
 
   if (v.events === undefined || v.events.indexOf("field") > -1) {
-    busboy.on("field", function (key, val, keyTrunc, valTrunc, encoding, contype) {
+    busboy.on("field", function(key, val, keyTrunc, valTrunc, encoding, contype) {
       results.push(["field", key, val, keyTrunc, valTrunc, encoding, contype]);
     });
   }
   if (v.events === undefined || v.events.indexOf("file") > -1) {
-    busboy.on("file", function (fieldname, stream, filename, encoding, mimeType) {
+    busboy.on("file", function(fieldname, stream, filename, encoding, mimeType) {
       var nb = 0,
         info = ["file", fieldname, nb, 0, filename, encoding, mimeType];
       results.push(info);
       stream
-        .on("data", function (d) {
+        .on("data", function(d) {
           nb += d.length;
         })
-        .on("limit", function () {
+        .on("limit", function() {
           ++info[3];
         })
-        .on("end", function () {
+        .on("end", function() {
           info[2] = nb;
           if (stream.truncated) ++info[3];
         });
     });
   }
   busboy
-    .on("finish", function () {
+    .on("finish", function() {
       assert(finishes++ === 0, makeMsg(v.what, "finish emitted multiple times"));
       assert.deepEqual(
         results.length,
@@ -323,7 +318,7 @@ function next() {
         makeMsg(v.what, "Parsed result count mismatch. Saw " + results.length + ". Expected: " + v.expected.length),
       );
 
-      results.forEach(function (result, i) {
+      results.forEach(function(result, i) {
         assert.deepEqual(
           result,
           v.expected[i],
@@ -333,11 +328,11 @@ function next() {
       ++t;
       next();
     })
-    .on("error", function (err) {
+    .on("error", function(err) {
       if (!v.shouldError || v.shouldError !== err.message) assert(false, makeMsg(v.what, "Unexpected error: " + err));
     });
 
-  v.source.forEach(function (s) {
+  v.source.forEach(function(s) {
     busboy.write(new Buffer(s, "utf8"), EMPTY_FN);
   });
   busboy.end();
@@ -348,6 +343,6 @@ function makeMsg(what, msg) {
   return "[" + group + what + "]: " + msg;
 }
 
-process.on("exit", function () {
+process.on("exit", function() {
   assert(t === tests.length, makeMsg("_exit", "Only finished " + t + "/" + tests.length + " tests"));
 });

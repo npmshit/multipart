@@ -21,7 +21,7 @@ function HeaderParser(cfg) {
   this.header = {};
   this.finished = false;
   this.ss = new StreamSearch(B_DCRLF);
-  this.ss.on("info", function (isMatch, data, start, end) {
+  this.ss.on("info", function(isMatch, data, start, end) {
     if (data && !self.maxed) {
       if (self.nread + (end - start) > MAX_HEADER_SIZE) {
         end = MAX_HEADER_SIZE - self.nread;
@@ -37,19 +37,19 @@ function HeaderParser(cfg) {
 }
 inherits(HeaderParser, EventEmitter);
 
-HeaderParser.prototype.push = function (data) {
+HeaderParser.prototype.push = function(data) {
   var r = this.ss.push(data);
   if (this.finished) return r;
 };
 
-HeaderParser.prototype.reset = function () {
+HeaderParser.prototype.reset = function() {
   this.finished = false;
   this.buffer = "";
   this.header = {};
   this.ss.reset();
 };
 
-HeaderParser.prototype._finish = function () {
+HeaderParser.prototype._finish = function() {
   if (this.buffer) this._parseHeader();
   this.ss.matches = this.ss.maxMatches;
   var header = this.header;
@@ -61,7 +61,7 @@ HeaderParser.prototype._finish = function () {
   this.emit("header", header);
 };
 
-HeaderParser.prototype._parseHeader = function () {
+HeaderParser.prototype._parseHeader = function() {
   if (this.npairs === this.maxHeaderPairs) return;
 
   var lines = this.buffer.split(RE_CRLF),

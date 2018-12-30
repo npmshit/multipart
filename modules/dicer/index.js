@@ -9,7 +9,7 @@ var PartStream = require("./PartStream"),
 var DASH = 45,
   B_ONEDASH = new Buffer("-"),
   B_CRLF = new Buffer("\r\n"),
-  EMPTY_FN = function () {};
+  EMPTY_FN = function() {};
 
 function Dicer(cfg) {
   if (!(this instanceof Dicer)) return new Dicer(cfg);
@@ -35,30 +35,33 @@ function Dicer(cfg) {
   this._part = undefined;
   this._cb = undefined;
   this._ignoreData = false;
-  this._partOpts = typeof cfg.partHwm === "number" ? {
-    highWaterMark: cfg.partHwm
-  } : {};
+  this._partOpts =
+    typeof cfg.partHwm === "number"
+      ? {
+          highWaterMark: cfg.partHwm,
+        }
+      : {};
   this._pause = false;
 
   this._hparser = new HeaderParser(cfg);
-  this._hparser.on("header", function (header) {
+  this._hparser.on("header", function(header) {
     self._inHeader = false;
     self._part.emit("header", header);
   });
 }
 inherits(Dicer, WritableStream);
 
-Dicer.prototype.emit = function (ev) {
+Dicer.prototype.emit = function(ev) {
   if (ev === "finish" && !this._realFinish) {
     if (!this._finished) {
       var self = this;
-      process.nextTick(function () {
+      process.nextTick(function() {
         self.emit("error", new Error("Unexpected end of multipart data"));
         if (self._part && !self._ignoreData) {
           var type = self._isPreamble ? "Preamble" : "Part";
           self._part.emit("error", new Error(type + " terminated early due to unexpected end of multipart data"));
           self._part.push(null);
-          process.nextTick(function () {
+          process.nextTick(function() {
             self._realFinish = true;
             self.emit("finish");
             self._realFinish = false;
@@ -73,7 +76,7 @@ Dicer.prototype.emit = function (ev) {
   } else WritableStream.prototype.emit.apply(this, arguments);
 };
 
-Dicer.prototype._write = function (data, encoding, cb) {
+Dicer.prototype._write = function(data, encoding, cb) {
   // ignore unexpected data (e.g. extra trailer data after finished)
   if (!this._hparser && !this._bparser) return cb();
 
@@ -100,21 +103,21 @@ Dicer.prototype._write = function (data, encoding, cb) {
   else cb();
 };
 
-Dicer.prototype.reset = function () {
+Dicer.prototype.reset = function() {
   this._part = undefined;
   this._bparser = undefined;
   this._hparser = undefined;
 };
 
-Dicer.prototype.setBoundary = function (boundary) {
+Dicer.prototype.setBoundary = function(boundary) {
   var self = this;
   this._bparser = new StreamSearch("\r\n--" + boundary);
-  this._bparser.on("info", function (isMatch, data, start, end) {
+  this._bparser.on("info", function(isMatch, data, start, end) {
     self._oninfo(isMatch, data, start, end);
   });
 };
 
-Dicer.prototype._ignore = function () {
+Dicer.prototype._ignore = function() {
   if (this._part && !this._ignoreData) {
     this._ignoreData = true;
     this._part.on("error", EMPTY_FN);
@@ -125,7 +128,7 @@ Dicer.prototype._ignore = function () {
   }
 };
 
-Dicer.prototype._oninfo = function (isMatch, data, start, end) {
+Dicer.prototype._oninfo = function(isMatch, data, start, end) {
   var buf,
     self = this,
     i = 0,
@@ -160,7 +163,7 @@ Dicer.prototype._oninfo = function (isMatch, data, start, end) {
   if (this._justMatched) this._justMatched = false;
   if (!this._part) {
     this._part = new PartStream(this._partOpts);
-    this._part._read = function (n) {
+    this._part._read = function(n) {
       self._unpause();
     };
     ev = this._isPreamble ? "preamble" : "part";
@@ -184,7 +187,7 @@ Dicer.prototype._oninfo = function (isMatch, data, start, end) {
     if (this._isPreamble) this._isPreamble = false;
     else {
       ++this._parts;
-      this._part.on("end", function () {
+      this._part.on("end", function() {
         if (--self._parts === 0) {
           if (self._finished) {
             self._realFinish = true;
@@ -204,7 +207,7 @@ Dicer.prototype._oninfo = function (isMatch, data, start, end) {
   }
 };
 
-Dicer.prototype._unpause = function () {
+Dicer.prototype._unpause = function() {
   if (!this._pause) return;
 
   this._pause = false;
