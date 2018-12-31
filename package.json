@@ -1,6 +1,6 @@
 {
   "name": "@modernjs/multipart",
-  "version": "1.0.2",
+  "version": "1.0.3",
   "author": "Zongmin Lei <leizongmin@gmail.com>",
   "description": "A streaming parser for HTML form data for node.js",
   "main": "lib/main.js",
